@@ -1,8 +1,8 @@
 mandatory: true
 question:  |
   Hello, ${ name }. 
- ---
+---
 question: What is your name? 
 fields: 
     - Name:  name
-    
+---
