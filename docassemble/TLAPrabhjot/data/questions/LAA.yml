@@ -1,8 +1,52 @@
+objects: 
+  - user: Individual
+  - cohabs: DAList.using(object_type=Individual)
+---
 mandatory: true
 question:  |
   Hello, ${ name }. 
+subquestion: |
+  You live with ${ cohabs }. 
+  You have ${ user.howmany_dependents } dependent(s). 
+  You have ${ user.howmany_assets }. 
+  Your signature: ${ user.signature }.
 ---
 question: What is your name? 
 fields: 
   - Name:  name
 ---
+generic object: Individual
+Question: |
+  What is ${ x.object_possessive('name') }.
+fields: 
+  - First Name: x.name.first
+  - Last Name: x.name.last 
+---
+question: Do you live with anyone? 
+yesno: cohabs.there_are_any
+---
+question: Do you live with anyone else?
+yesno: cohabs.there_is_another
+--- 
+question: How many dependant(s) do you have? 
+field: user.howmany_dependents
+choices:
+  - zero 
+  - one
+  - two 
+  - three 
+  - more than three
+---
+question: Do you have own any of the following assests? 
+field: user.howmany_assets
+choices:
+  - residental property
+  - investment property
+  - vehicle(s)
+  - savings 
+---
+question: Please sign 
+signature: user.signature
+---
+
+
