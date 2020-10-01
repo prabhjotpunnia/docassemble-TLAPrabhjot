@@ -1,52 +1,59 @@
-objects: 
+Objects: 
   - user: Individual
-  - cohabs: DAList.using(object_type=Individual)
+  - dependents: DAList
 ---
-mandatory: true
-question:  |
-  Hello, ${ name }. 
-subquestion: |
-  You live with ${ cohabs }. 
-  You have ${ user.howmany_dependents } dependent(s). 
-  You have ${ user.howmany_assets }. 
-  Your signature: ${ user.signature }.
----
-question: What is your name? 
-fields: 
-  - Name:  name
----
-generic object: Individual
-Question: |
-  What is ${ x.object_possessive('name') }.
-fields: 
-  - First Name: x.name.first
-  - Last Name: x.name.last 
----
-question: Do you live with anyone? 
-yesno: cohabs.there_are_any
----
-question: Do you live with anyone else?
-yesno: cohabs.there_is_another
+mandatory: true 
+question: |
+  Results
+attachments:
+  - name: Document 
+    filename: document 
+    content: |
+      Advice Memo on your Legal Aid Eligibilty
+      
+      Hello, ${ name }, 
+      
+      Have you been charged with an offence? ${ user.charged_offence}.
+      
+      The offence you have been charged with is ${ user.name_offence}.
+      
+      % if len(dependents) > 0:
+      Your dependents are: ${ dependents }.
+      % endif
+      
+      % if qualify_legal_aid: 
+      Congratulations, you qualify for the legal aid! We are able to assist you         with your legal matter(s). 
+      
+      % else:
+      Unfortunately, you do not qualify for legal aid. Your other legal options         are to either self-represent or to hire a counsel.  
+      
+      % endif
+      
+      Date of signature is ${ format_date(date, format='EEEE, MMMM         d, yyyy') }, which can also be written as ${ format_date(date,               format="yyyy-MM-dd") }.
 --- 
-question: How many dependant(s) do you have? 
-field: user.howmany_dependents
-choices:
-  - zero 
-  - one
-  - two 
-  - three 
-  - more than three
+Question: What is your name? 
+fields:
+  - Name: name
 ---
-question: Do you have own any of the following assests? 
-field: user.howmany_assets
-choices:
-  - residental property
-  - investment property
-  - vehicle(s)
-  - savings 
+Question: Have you been charged with an offence? 
+yesno: user.charged_offence
+---
+Question: What offence have you been charged with?
+fields:
+- Name: user.name_offence
+---
+question: What are the names of your dependents? 
+fields:
+- Name: dependents
+---
+question: Do you think you qualify for legal aid?
+yesno:  qualify_legal_aid 
 ---
 question: Please sign 
 signature: user.signature
 ---
-
-
+question: Date of the application 
+fields:
+  - Today's date: date 
+    datatype: date
+--- 
