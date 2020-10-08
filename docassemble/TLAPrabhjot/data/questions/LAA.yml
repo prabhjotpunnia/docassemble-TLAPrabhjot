@@ -1,59 +1,161 @@
-Objects: 
+Objects:
   - user: Individual
-  - dependents: DAList
+  - your_dependents: DAList.using(object_type=Individual)
 ---
-mandatory: true 
+mandatory: true
 question: |
   Results
 attachments:
-  - name: Document 
-    filename: document 
+  - name: Document
+    filename: document
     content: |
-      Advice Memo on your Legal Aid Eligibilty
+      Re: ${ name }'s Legal Aid Eligibilty Assessment
       
-      Hello, ${ name }, 
+      Hello, ${ name },
       
-      Have you been charged with an offence? ${ user.charged_offence}.
-      
-      The offence you have been charged with is ${ user.name_offence}.
-      
-      % if len(dependents) > 0:
-      Your dependents are: ${ dependents }.
-      % endif
-      
-      % if qualify_legal_aid: 
-      Congratulations, you qualify for the legal aid! We are able to assist you         with your legal matter(s). 
-      
+      % if user_eligible:
+      We are delighted to inform you that you qualify for Legal Aid. Our decision is based on the information you have provided us, and it is subject to re-evaluation if any information has not been fully disclosed to us. Please call our office at (780) 999-9999 to book an appointment. 
       % else:
-      Unfortunately, you do not qualify for legal aid. Your other legal options         are to either self-represent or to hire a counsel.  
-      
+      We regret to inform you that you do not qualify for Legal Aid. You can either choose to self-represent or hire a counsel to represent you.
       % endif
       
-      Date of signature is ${ format_date(date, format='EEEE, MMMM         d, yyyy') }, which can also be written as ${ format_date(date,               format="yyyy-MM-dd") }.
---- 
-Question: What is your name? 
+      The following is the information you have disclosed to us:
+      
+      % if prior_assistance:
+      You have previously employed the services of Legal Aid.
+      % endif
+      
+      % if have_lawyer and acting_for_user:
+      You are currently represented by a counsel.
+      % else:
+      You are not currently represented by a counsel.
+      % endif
+      
+      % if afford_a_lawyer:
+      You are able to retain a counsel on your own.
+      % endif
+      
+      % if under_represented:
+      You are in need of a legal representation. 
+      % endif
+      
+      % if not (prior_assistance) and lives_in_Alberta:
+      You are a resident of Alberta.
+      % else:
+      You are not a resident of Alberta.
+      % endif
+      
+      % if not (prior_assistance) and located_in_Alberta:
+      Your charges are being pursued in Alberta.
+      % else:
+      Your charges are not being pursued in Alberta.
+       % endif
+       
+      % if not (prior_assistance) and family_law_matter:
+      You need our asistance with a family law matter.
+      % endif
+      
+      % if not (prior_assistance) and criminal_law_matter:
+      You need our asistance with a criminal law matter.
+      % endif
+      
+      % if len( your_dependents) > 0:
+      Your dependents are: ${ your_dependents}.
+      % endif
+      
+      This information was provided on ${ format_date(date, format='EEEE, MMMM         d, yyyy') }.
+      Thank you,
+      Legal Aid
+---
+mandatory: true
+code: |
+  # Code-flow block
+  # user_eligible
+  if prior_assistance or (under_represented and residency_met and criminal_law_matter) or (under_represented and residency_met and family_law_matter):
+    user_eligible = True
+  else:
+    user_eligible = False
+---
+mandatory: true
+code: |
+  # Code-flow block
+  # residency_met
+  if (located_in_Alberta and lives_in_Alberta):
+    residency_met = True
+  else:
+    residency_met = False
+---
+mandatory: true
+code: |
+  # Code-flow block
+  # under_represented
+  if not (have_lawyer and acting_for_user) or afford_a_lawyer:
+    under_represented = True
+  else:
+    under_represented = False
+---
+mandatory: true
+code: |
+  # Code-flow block
+  # have_lawyer
+  if (have_lawyer):
+    acting_for_user = True
+  else:
+    acting_for_user = False
+---
+question: What is your name?
 fields:
   - Name: name
 ---
-Question: Have you been charged with an offence? 
+generic object: Individual
+question: |
+  What is ${x.object_possessive('name') }?
+fields:
+  - First Name: x.name.first
+  - Last Name: x.name.last
+---
+question: Have your made an application with us previously?
+yesno: prior_assistance
+---
+question: Do you live in Alberta?
+yesno: lives_in_Alberta
+---
+question: Is your matter located in Alberta?
+yesno: located_in_Alberta
+---
+question: Does you have a lawyer?
+yesno: have_lawyer
+---
+question: Is your lawyer still acting for you?
+yesno: acting_for_user
+---
+question: Can you afford a lawyer?
+yesno: afford_a_lawyer
+---
+Question: Have you been charged with an offence?
 yesno: user.charged_offence
 ---
 Question: What offence have you been charged with?
 fields:
 - Name: user.name_offence
 ---
-question: What are the names of your dependents? 
+question: Is your legal matter a family law matter?
+yesno: family_law_matter
+---
+question: Is your legal matter a criminal law matter?
+yesno: criminal_law_matter
+---
+question: Is your matter an appeal of a matter for which the user received LAA assistance?
+yesno: received_assistance
+---
+Question: Do you have any dependents?
+yesno: your_dependents.there_are_any
+---
+question: Do you have any additional dependents?
+yesno: your_dependents.there_is_another
+---
+question: Date of the application
 fields:
-- Name: dependents
----
-question: Do you think you qualify for legal aid?
-yesno:  qualify_legal_aid 
----
-question: Please sign 
-signature: user.signature
----
-question: Date of the application 
-fields:
-  - Today's date: date 
+  - Today's date: date
     datatype: date
---- 
+---
